@@ -11,7 +11,7 @@ public class Main {
         System.out.println("Привет! Давай поделим чек!");
         users = requestUsers();
         System.out.println("Теперь давай заполним товары!");
-        itemList = requestItems();
+        itemList = newRequestItems();
         System.out.println("А теперь посчитаем!");
         System.out.println("Список товаров:");
         displayItems(itemList);
@@ -48,6 +48,7 @@ public class Main {
     }
 
     //Метод заполняющий массив товарами до ввода "Завершить"
+    /*
     private static ArrayList<Item> requestItems() {
         ArrayList<Item> itemList = new ArrayList<>();
         String input = "";
@@ -87,6 +88,45 @@ public class Main {
                 break;
             } else System.out.println("Некорректный ввод. Используй корректное форматирование.");
         }
+        return itemList;
+    }
+    */
+
+    //Переписанный метод заполнения массива товаров
+    private static ArrayList<Item> newRequestItems() {
+        ArrayList<Item> itemList = new ArrayList<>();
+        String input = "";
+        String name = "";
+        String[] inputStringArray;
+        int price = 0;
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("Вводи каждый товар по порядку в формате: '[Название] [Цена]'");
+        System.out.println("Где [Название] это строка, а [Цена] это положительное число в формате рубли.копейки, например 9.00");
+        System.out.println("Чтобы закончить ввод напиши 'Завершить'");
+
+        while (true) {
+            input = scanner.nextLine().trim();
+            inputStringArray = input.split(" ");
+            int len = inputStringArray.length;
+            String priceString = inputStringArray[len - 1];
+
+            //научился писать regex, это оказалось не так уж сложно :)
+            if (len > 1 && (priceString.matches("^\\d*\\d[.]\\d\\d$"))) {
+                //если больше одной строки и последняя строка соответсвует формату, то пропускаем
+                priceString = priceString.replaceAll("[.]", "");
+                price = Integer.parseInt(priceString);
+                name = input.substring(0, input.lastIndexOf(" "));
+                itemList.add(new Item(name, price));
+                System.out.println("Товар успешно добавлен: " + input + rubleWording(price));
+            } else if (input.equalsIgnoreCase("Завершить")) {
+                System.out.println("Заполнение списка товаров закончено.");
+                break;
+            } else {
+                System.out.println("Некорректный ввод. Используй корректное форматирование.");
+            }
+        }
+
         return itemList;
     }
 
@@ -130,11 +170,11 @@ public class Main {
         int len = priceString.length();
         //цифра третья с конца (первая после запятой)
         int third = priceString.charAt(len - 3) - '0'; //долго мучился с тем что char цифра нормально не транслируется в int. Нашёл такой воркэраунд но мне это нравится
-        //Если цена имеет 2 и больше символов перед запятой или первая цифра перед запятой равна 0 или больше 4, то "рублей"
-        if (len >= 4 || third == 0 || third > 4) output = " рублей";
-        else if (third == 1) output = " рубль";
-        //остаются 2, 3, 4
-        else output = " рубля";
+
+        if (price < 100 || (price >= 500 && price < 2100)) output = " рублей"; // если целая часть цены 0 или от 5 до 20, то рублей
+        else if (third == 1) output = " рубль"; // если третья цифра это 1 и это не 11, то рубль
+        else if (third >= 2 && third <= 4) output = " рубля"; //если третья цифра от 2 до 4, и это не от 12 до 14, то рубля
+        else output = " рублей"; //остальные
 
         return output;
     }
